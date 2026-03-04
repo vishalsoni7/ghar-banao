@@ -155,6 +155,11 @@ const PurchaseList = ({ purchases, onEdit, onDelete, onView }) => {
               </TableCell>
               <TableCell>{getStatusChip(purchase.paymentStatus)}</TableCell>
               <TableCell align="center" onClick={(e) => e.stopPropagation()}>
+                <Tooltip title={t('details')}>
+                  <IconButton size="small" color="primary" onClick={() => onView(purchase)}>
+                    <Visibility fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title={t('edit')}>
                   <IconButton size="small" onClick={() => onEdit(purchase)}>
                     <Edit fontSize="small" />
