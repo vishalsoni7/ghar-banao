@@ -7,6 +7,7 @@ import { PurchaseProvider } from './context/PurchaseContext';
 import { PaymentProvider } from './context/PaymentContext';
 import CustomToaster from './components/Common/CustomToaster';
 import AppLayout from './components/Layout/AppLayout';
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -15,6 +16,7 @@ import Purchases from './pages/Purchases';
 import Payments from './pages/Payments';
 import Reports from './pages/Reports';
 import Profile from './pages/Profile';
+import Categories from './pages/Categories';
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
                   <CustomToaster />
                   <Routes>
                     {/* Public Routes */}
+                    <Route path="/" element={<Landing />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
 
@@ -38,12 +41,12 @@ function App() {
                       <Route path="/purchases" element={<Purchases />} />
                       <Route path="/payments" element={<Payments />} />
                       <Route path="/reports" element={<Reports />} />
+                      <Route path="/categories" element={<Categories />} />
                       <Route path="/profile" element={<Profile />} />
                     </Route>
 
-                    {/* Redirect */}
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                    {/* Fallback */}
+                    <Route path="*" element={<Navigate to="/" replace />} />
                   </Routes>
                 </PaymentProvider>
               </PurchaseProvider>

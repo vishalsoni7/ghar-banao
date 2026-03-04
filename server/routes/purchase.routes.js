@@ -94,16 +94,16 @@ router.post('/', auth, upload.single('billPhoto'), async (req, res) => {
       return res.status(400).json({ message: 'At least one item is required' });
     }
 
-    // Validate each item
+    // Validate each item - category is required, name is optional
     for (let i = 0; i < parsedItems.length; i++) {
       const item = parsedItems[i];
-      if (!item.name || item.name.trim().length === 0) {
-        return res.status(400).json({ message: `Item ${i + 1}: Name is required` });
+      if (!item.category || item.category.trim().length === 0) {
+        return res.status(400).json({ message: `Item ${i + 1}: Category is required` });
       }
       if (!item.quantity || parseFloat(item.quantity) <= 0) {
         return res.status(400).json({ message: `Item ${i + 1}: Quantity must be greater than 0` });
       }
-      if (!item.rate || parseFloat(item.rate) < 0) {
+      if (item.rate === undefined || item.rate === null || parseFloat(item.rate) < 0) {
         return res.status(400).json({ message: `Item ${i + 1}: Rate is required` });
       }
     }
@@ -126,8 +126,8 @@ router.post('/', auth, upload.single('billPhoto'), async (req, res) => {
       vendorName: finalVendorName?.trim() || '',
       date: date ? new Date(date) : new Date(),
       items: parsedItems.map(item => ({
-        name: item.name.trim(),
-        category: item.category?.trim() || '',
+        name: item.name?.trim() || '',
+        category: item.category.trim(),
         quantity: parseFloat(item.quantity),
         unit: item.unit || 'piece',
         rate: parseFloat(item.rate),
@@ -194,11 +194,11 @@ router.put('/:id', auth, upload.single('billPhoto'), async (req, res) => {
       return res.status(400).json({ message: 'At least one item is required' });
     }
 
-    // Validate each item
+    // Validate each item - category is required, name is optional
     for (let i = 0; i < parsedItems.length; i++) {
       const item = parsedItems[i];
-      if (!item.name || item.name.trim().length === 0) {
-        return res.status(400).json({ message: `Item ${i + 1}: Name is required` });
+      if (!item.category || item.category.trim().length === 0) {
+        return res.status(400).json({ message: `Item ${i + 1}: Category is required` });
       }
       if (!item.quantity || parseFloat(item.quantity) <= 0) {
         return res.status(400).json({ message: `Item ${i + 1}: Quantity must be greater than 0` });
@@ -210,8 +210,8 @@ router.put('/:id', auth, upload.single('billPhoto'), async (req, res) => {
       vendorName: vendorName?.trim() || '',
       date: date ? new Date(date) : undefined,
       items: parsedItems.map(item => ({
-        name: item.name.trim(),
-        category: item.category?.trim() || '',
+        name: item.name?.trim() || '',
+        category: item.category.trim(),
         quantity: parseFloat(item.quantity),
         unit: item.unit || 'piece',
         rate: parseFloat(item.rate),

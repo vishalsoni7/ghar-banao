@@ -70,7 +70,7 @@ const PendingPayments = ({ purchases }) => {
                         {formatCurrency(pending)}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        of {formatCurrency(purchase.totalAmount)}
+                        {t('of')} {formatCurrency(purchase.totalAmount)}
                       </Typography>
                     </Box>
                   </ListItemSecondaryAction>
@@ -81,14 +81,14 @@ const PendingPayments = ({ purchases }) => {
         ) : (
           <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Typography color="text.secondary" textAlign="center">
-              No pending payments!
+              {t('noPendingPayments')}
             </Typography>
           </Box>
         )}
 
         {pendingPurchases.length > 5 && (
           <Button fullWidth onClick={() => navigate('/purchases?status=pending')}>
-            View All ({pendingPurchases.length})
+            {t('viewAll')} ({pendingPurchases.length})
           </Button>
         )}
       </CardContent>

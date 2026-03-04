@@ -15,8 +15,11 @@ import {
   Chip,
   Stack,
   Collapse,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { Add, Delete, PhotoCamera, Close, ExpandMore, ExpandLess } from '@mui/icons-material';
+import { Add, Delete, PhotoCamera, Close, ExpandMore, ExpandLess, PersonAdd } from '@mui/icons-material';
+import toast from 'react-hot-toast';
 import { useLanguage } from '../../context/LanguageContext';
 import { useVendors } from '../../context/VendorContext';
 import { usePurchases } from '../../context/PurchaseContext';
@@ -34,9 +37,16 @@ const emptyItem = {
 
 const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
   const { t, language } = useLanguage();
-  const { vendors, fetchVendors } = useVendors();
+  const { vendors, fetchVendors, addVendor } = useVendors();
   const { categories, fetchCategories } = usePurchases();
   const fileInputRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Quick add vendor state
+  const [showAddVendor, setShowAddVendor] = useState(false);
+  const [newVendor, setNewVendor] = useState({ name: '', phone: '', category: '' });
+  const [addingVendor, setAddingVendor] = useState(false);
 
   const [formData, setFormData] = useState({
     vendorId: '',
@@ -159,12 +169,38 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
     }
   };
 
+  // Quick add vendor handler
+  const handleQuickAddVendor = async () => {
+    if (!newVendor.name.trim()) {
+      toast.error(t('vendorName') + ' ' + t('required') || 'Vendor name is required');
+      return;
+    }
+
+    setAddingVendor(true);
+    try {
+      const createdVendor = await addVendor(newVendor);
+      if (createdVendor) {
+        // Select the newly created vendor
+        setFormData({ ...formData, vendorId: createdVendor._id, vendorName: createdVendor.name });
+        toast.success(t('vendorAdded'));
+        setShowAddVendor(false);
+        setNewVendor({ name: '', phone: '', category: '' });
+        // Refresh vendors list
+        fetchVendors();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add vendor');
+    } finally {
+      setAddingVendor(false);
+    }
+  };
+
   const totalAmount = formData.items.reduce((sum, item) => sum + (item.amount || 0), 0);
 
   // Validation
   const hasVendor = formData.vendorId || formData.vendorName?.trim();
   const hasValidItems = formData.items.some(item =>
-    item.name?.trim() && parseFloat(item.quantity) > 0 && parseFloat(item.rate) >= 0
+    item.category && parseFloat(item.quantity) > 0 && parseFloat(item.rate) >= 0
   );
   const isFormValid = hasVendor && hasValidItems && formData.date;
 
@@ -184,7 +220,7 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
       ...formData,
       vendorName,
       totalAmount,
-      items: formData.items.filter(item => item.name?.trim()),
+      items: formData.items.filter(item => item.category),
     });
   };
 
@@ -197,53 +233,133 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { borderRadius: 3 } }}
+      fullScreen={isMobile}
+      PaperProps={{ sx: { borderRadius: isMobile ? 0 : 3 } }}
     >
       <form onSubmit={handleSubmit}>
-        <DialogTitle sx={{ pb: 1 }}>
+        <DialogTitle sx={{ pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {purchase ? t('editPurchase') : t('addPurchase')}
+          {isMobile && (
+            <IconButton onClick={onClose} edge="end">
+              <Close />
+            </IconButton>
+          )}
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 2 }}>
-          <Stack spacing={2.5}>
-            {/* Vendor - Single Autocomplete */}
-            <Autocomplete
-              freeSolo
-              options={vendors}
-              getOptionLabel={(option) =>
-                typeof option === 'string' ? option : option.name
-              }
-              value={selectedVendor}
-              onChange={handleVendorChange}
-              onInputChange={(event, newInputValue, reason) => {
-                if (reason === 'input') {
-                  setFormData({ ...formData, vendorId: '', vendorName: newInputValue });
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={t('vendors') + ' *'}
-                  placeholder="Select or type vendor name"
-                  required
+        <DialogContent sx={{ pt: 2, px: isMobile ? 2 : 3 }}>
+          <Stack spacing={3}>
+            {/* Vendor Selection with Quick Add */}
+            <Box>
+              <Box sx={{ display: 'flex', gap: 1, alignItems: 'stretch' }}>
+                <Autocomplete
+                  freeSolo
+                  options={vendors}
+                  getOptionLabel={(option) =>
+                    typeof option === 'string' ? option : option.name
+                  }
+                  value={selectedVendor}
+                  onChange={handleVendorChange}
+                  onInputChange={(event, newInputValue, reason) => {
+                    if (reason === 'input') {
+                      setFormData({ ...formData, vendorId: '', vendorName: newInputValue });
+                    }
+                  }}
+                  sx={{ flex: 1 }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t('vendors') + ' *'}
+                      placeholder={t('selectVendor')}
+                      required
+                    />
+                  )}
+                  renderOption={(props, option) => (
+                    <li {...props} key={option._id}>
+                      <Box>
+                        <Typography>{option.name}</Typography>
+                        {option.phone && (
+                          <Typography variant="caption" color="text.secondary">
+                            {option.phone}
+                          </Typography>
+                        )}
+                      </Box>
+                    </li>
+                  )}
                 />
-              )}
-              renderOption={(props, option) => (
-                <li {...props} key={option._id}>
-                  <Box>
-                    <Typography>{option.name}</Typography>
-                    {option.phone && (
-                      <Typography variant="caption" color="text.secondary">
-                        {option.phone}
-                      </Typography>
-                    )}
-                  </Box>
-                </li>
-              )}
-            />
+                <Button
+                  variant={showAddVendor ? 'contained' : 'outlined'}
+                  onClick={() => setShowAddVendor(!showAddVendor)}
+                  sx={{ minWidth: 56, px: 1 }}
+                  title={t('addVendor')}
+                >
+                  <PersonAdd />
+                </Button>
+              </Box>
 
-            {/* Date and Payment Status - Side by side */}
-            <Box sx={{ display: 'flex', gap: 2 }}>
+              {/* Quick Add Vendor Form */}
+              <Collapse in={showAddVendor}>
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'action.hover', borderRadius: 2 }}>
+                  <Typography variant="subtitle2" mb={2}>{t('addVendor')}</Typography>
+                  <Stack spacing={2}>
+                    <TextField
+                      size="small"
+                      label={t('vendorName') + ' *'}
+                      value={newVendor.name}
+                      onChange={(e) => setNewVendor({ ...newVendor, name: e.target.value })}
+                      fullWidth
+                    />
+                    <TextField
+                      size="small"
+                      label={t('phone')}
+                      value={newVendor.phone}
+                      onChange={(e) => setNewVendor({ ...newVendor, phone: e.target.value })}
+                      fullWidth
+                      inputProps={{ maxLength: 10 }}
+                    />
+                    <TextField
+                      size="small"
+                      select
+                      label={t('category') + ' *'}
+                      value={newVendor.category}
+                      onChange={(e) => setNewVendor({ ...newVendor, category: e.target.value })}
+                      SelectProps={{ native: true }}
+                      InputLabelProps={{ shrink: true }}
+                      fullWidth
+                    >
+                      <option value="">{t('selectOption')}</option>
+                      {categories.map((cat) => (
+                        <option key={cat._id} value={cat.name}>
+                          {language === 'hi' ? cat.nameHi || cat.name : cat.name}
+                        </option>
+                      ))}
+                    </TextField>
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <Button
+                        size="small"
+                        onClick={() => {
+                          setShowAddVendor(false);
+                          setNewVendor({ name: '', phone: '', category: '' });
+                        }}
+                      >
+                        {t('cancel')}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={handleQuickAddVendor}
+                        disabled={addingVendor || !newVendor.name.trim() || !newVendor.category}
+                        startIcon={addingVendor ? <CircularProgress size={16} /> : <Add />}
+                      >
+                        {t('add')}
+                      </Button>
+                    </Box>
+                  </Stack>
+                </Box>
+              </Collapse>
+            </Box>
+
+            {/* Date and Payment Status */}
+            <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2 }}>
               <TextField
                 type="date"
                 label={t('purchaseDate')}
@@ -252,7 +368,8 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
                 onChange={handleChange}
                 InputLabelProps={{ shrink: true }}
                 required
-                sx={{ flex: 1 }}
+                fullWidth={isMobile}
+                sx={{ flex: isMobile ? undefined : 1 }}
               />
               <TextField
                 select
@@ -261,7 +378,9 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
                 value={formData.paymentStatus}
                 onChange={handleChange}
                 SelectProps={{ native: true }}
-                sx={{ flex: 1 }}
+                InputLabelProps={{ shrink: true }}
+                fullWidth={isMobile}
+                sx={{ flex: isMobile ? undefined : 1 }}
               >
                 <option value="pending">{t('pending')}</option>
                 <option value="partial">{t('partial')}</option>
@@ -295,99 +414,116 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
                 </Button>
               </Box>
 
-              <Stack spacing={1.5}>
+              <Stack spacing={2}>
                 {formData.items.map((item, index) => (
                   <Box
                     key={index}
                     sx={{
-                      p: 1.5,
+                      p: 2,
                       bgcolor: 'action.hover',
                       borderRadius: 2,
                     }}
                   >
-                    {/* Row 1: Item Name & Category */}
-                    <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                    <Stack spacing={2}>
+                      {/* Item Name with Delete Button */}
+                      <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+                        <TextField
+                          label={t('itemName')}
+                          placeholder={t('enterItemName')}
+                          value={item.name}
+                          onChange={(e) => handleItemChange(index, 'name', e.target.value)}
+                          fullWidth
+                          size={isMobile ? 'medium' : 'small'}
+                        />
+                        {formData.items.length > 1 && (
+                          <IconButton
+                            size="small"
+                            color="error"
+                            onClick={() => removeItem(index)}
+                            sx={{ mt: isMobile ? 1 : 0.5 }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        )}
+                      </Box>
+
+                      {/* Category */}
                       <TextField
-                        size="small"
-                        placeholder={t('itemName') + ' *'}
-                        value={item.name}
-                        onChange={(e) => handleItemChange(index, 'name', e.target.value)}
-                        required
-                        sx={{ flex: 2 }}
-                      />
-                      <TextField
-                        size="small"
                         select
+                        label={t('category') + ' *'}
                         value={item.category}
                         onChange={(e) => handleItemChange(index, 'category', e.target.value)}
                         SelectProps={{ native: true }}
-                        sx={{ flex: 1, minWidth: 100 }}
+                        InputLabelProps={{ shrink: true }}
+                        required
+                        fullWidth
+                        size={isMobile ? 'medium' : 'small'}
                       >
-                        <option value="">{t('category')}</option>
+                        <option value="">{t('selectOption')}</option>
                         {categories.map((cat) => (
                           <option key={cat._id} value={cat.name}>
                             {language === 'hi' ? cat.nameHi || cat.name : cat.name}
                           </option>
                         ))}
                       </TextField>
-                    </Box>
 
-                    {/* Row 2: Qty, Unit, Rate, Amount, Delete */}
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                      <TextField
-                        size="small"
-                        type="number"
-                        placeholder="Qty"
-                        value={item.quantity}
-                        onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                        required
-                        sx={{ width: 85 }}
-                        inputProps={{ min: 0 }}
-                      />
-                      <TextField
-                        size="small"
-                        select
-                        value={item.unit}
-                        onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
-                        SelectProps={{ native: true }}
-                        sx={{ width: 95 }}
-                      >
-                        {units.map((u) => (
-                          <option key={u.value} value={u.value}>
-                            {language === 'hi' ? u.labelHi : u.labelEn}
-                          </option>
-                        ))}
-                      </TextField>
-                      <TextField
-                        size="small"
-                        type="number"
-                        placeholder="Rate"
-                        value={item.rate}
-                        onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                        required
-                        sx={{ width: 110 }}
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-                        }}
-                        inputProps={{ min: 0 }}
-                      />
-                      <Typography
-                        variant="body2"
-                        fontWeight="bold"
-                        sx={{ flex: 1, textAlign: 'right', minWidth: 70 }}
-                      >
-                        = {formatCurrency(item.amount)}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => removeItem(index)}
-                        disabled={formData.items.length === 1}
-                        sx={{ ml: 0.5 }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    </Box>
+                      {/* Quantity and Unit */}
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <TextField
+                          type="number"
+                          label={t('quantity') + ' *'}
+                          placeholder={t('qty')}
+                          value={item.quantity}
+                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                          required
+                          sx={{ flex: 1 }}
+                          inputProps={{ min: 0 }}
+                          size={isMobile ? 'medium' : 'small'}
+                        />
+                        <TextField
+                          select
+                          label={t('unit')}
+                          value={item.unit}
+                          onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
+                          SelectProps={{ native: true }}
+                          InputLabelProps={{ shrink: true }}
+                          sx={{ flex: 1 }}
+                          size={isMobile ? 'medium' : 'small'}
+                        >
+                          {units.map((u) => (
+                            <option key={u.value} value={u.value}>
+                              {language === 'hi' ? u.labelHi : u.labelEn}
+                            </option>
+                          ))}
+                        </TextField>
+                      </Box>
+
+                      {/* Rate and Amount */}
+                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <TextField
+                          type="number"
+                          label={t('rateWithSymbol') + ' *'}
+                          placeholder={t('pricePerUnit')}
+                          value={item.rate}
+                          onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
+                          required
+                          sx={{ flex: 1 }}
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                          }}
+                          inputProps={{ min: 0 }}
+                          size={isMobile ? 'medium' : 'small'}
+                        />
+                        <Box sx={{ flex: 1, textAlign: 'right' }}>
+                          <Typography variant="caption" color="text.secondary">
+                            {t('amount')}
+                          </Typography>
+                          <Typography variant="h6" fontWeight="bold">
+                            {formatCurrency(item.amount)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Stack>
                   </Box>
                 ))}
               </Stack>
@@ -415,7 +551,7 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
               sx={{ alignSelf: 'flex-start', textTransform: 'none' }}
               color="inherit"
             >
-              {showOptional ? 'Hide' : 'Show'} optional fields
+              {showOptional ? t('hideOptionalFields') : t('showOptionalFields')}
             </Button>
 
             <Collapse in={showOptional}>
@@ -496,18 +632,27 @@ const PurchaseForm = ({ open, onClose, onSubmit, purchase, loading }) => {
           </Stack>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={onClose} color="inherit" disabled={loading}>
-            {t('cancel')}
-          </Button>
+        <DialogActions sx={{ px: isMobile ? 2 : 3, pb: 2, pt: 1, flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? 1 : 0 }}>
+          {!isMobile && (
+            <Button onClick={onClose} color="inherit" disabled={loading}>
+              {t('cancel')}
+            </Button>
+          )}
           <Button
             type="submit"
             variant="contained"
             disabled={loading || !isFormValid}
-            sx={{ minWidth: 100 }}
+            fullWidth={isMobile}
+            size={isMobile ? 'large' : 'medium'}
+            sx={{ minWidth: isMobile ? undefined : 100 }}
           >
             {loading ? <CircularProgress size={22} /> : t('save')}
           </Button>
+          {isMobile && (
+            <Button onClick={onClose} color="inherit" disabled={loading} fullWidth>
+              {t('cancel')}
+            </Button>
+          )}
         </DialogActions>
       </form>
     </Dialog>

@@ -45,6 +45,7 @@ const Header = ({ onMenuClick, drawerWidth }) => {
   return (
     <AppBar
       position="fixed"
+      elevation={0}
       sx={{
         width: { sm: `calc(100% - ${drawerWidth}px)` },
         ml: { sm: `${drawerWidth}px` },
@@ -68,7 +69,7 @@ const Header = ({ onMenuClick, drawerWidth }) => {
           {/* User Menu */}
           <Tooltip title={user?.name || t('profile')}>
             <IconButton onClick={handleMenu} color="inherit">
-              <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+              <Avatar sx={{ width: 32, height: 32, bgcolor: 'grey.800', color: 'grey.100' }}>
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </Avatar>
             </IconButton>

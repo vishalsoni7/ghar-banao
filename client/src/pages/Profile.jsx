@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -12,43 +12,24 @@ import {
   Divider,
   ToggleButton,
   ToggleButtonGroup,
-} from '@mui/material';
-import { Save, Brightness4, Brightness7, Language, Sync } from '@mui/icons-material';
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext';
-import { useTheme } from '../context/ThemeContext';
-import { usePurchases } from '../context/PurchaseContext';
+} from "@mui/material";
+import { Save, Brightness4, Brightness7, Language } from "@mui/icons-material";
+import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext";
+import { useLanguage } from "../context/LanguageContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Profile = () => {
   const { user, updateProfile } = useAuth();
   const { t, language, toggleLanguage } = useLanguage();
   const { mode, toggleTheme } = useTheme();
-  const { syncCategories } = usePurchases();
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    projectName: user?.projectName || '',
+    name: user?.name || "",
+    email: user?.email || "",
+    projectName: user?.projectName || "",
   });
   const [loading, setLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
-
-  const handleSyncCategories = async () => {
-    setSyncing(true);
-    try {
-      const result = await syncCategories();
-      if (result.added > 0) {
-        toast.success(`Added ${result.added} new categories!`);
-      } else {
-        toast.success('Categories are up to date');
-      }
-    } catch (error) {
-      toast.error('Failed to sync categories');
-    } finally {
-      setSyncing(false);
-    }
-  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,9 +41,9 @@ const Profile = () => {
 
     try {
       await updateProfile(formData);
-      toast.success('Profile updated successfully');
+      toast.success("Profile updated successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error updating profile');
+      toast.error(error.response?.data?.message || "Error updating profile");
     } finally {
       setLoading(false);
     }
@@ -71,23 +52,23 @@ const Profile = () => {
   return (
     <Box>
       <Typography variant="h4" fontWeight="bold" mb={3}>
-        {t('profile')}
+        {t("profile")}
       </Typography>
 
       {/* Profile Header Card - Full Width */}
       <Card sx={{ mb: 3 }}>
         <CardContent sx={{ py: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
             <Avatar
               sx={{
                 width: 80,
                 height: 80,
-                bgcolor: 'primary.main',
+                bgcolor: "primary.main",
                 fontSize: 32,
                 flexShrink: 0,
               }}
             >
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+              {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </Avatar>
             <Box>
               <Typography variant="h5" fontWeight="bold">
@@ -107,10 +88,10 @@ const Profile = () => {
       {/* Edit Profile & Settings - Side by Side */}
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ height: '100%' }}>
+          <Card sx={{ height: "100%" }}>
             <CardContent>
               <Typography variant="h6" mb={3}>
-                Edit Profile
+                {t("editProfile")}
               </Typography>
 
               <form onSubmit={handleSubmit}>
@@ -118,7 +99,7 @@ const Profile = () => {
                   <Grid size={12}>
                     <TextField
                       fullWidth
-                      label={t('name')}
+                      label={t("name")}
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
@@ -129,17 +110,17 @@ const Profile = () => {
                   <Grid size={12}>
                     <TextField
                       fullWidth
-                      label={t('phone')}
-                      value={user?.phone || ''}
+                      label={t("phone")}
+                      value={user?.phone || ""}
                       disabled
-                      helperText="Phone number cannot be changed"
+                      helperText={t("phoneCannotBeChanged")}
                     />
                   </Grid>
 
                   <Grid size={12}>
                     <TextField
                       fullWidth
-                      label={t('email')}
+                      label={t("email")}
                       name="email"
                       type="email"
                       value={formData.email}
@@ -150,11 +131,11 @@ const Profile = () => {
                   <Grid size={12}>
                     <TextField
                       fullWidth
-                      label={t('projectName')}
+                      label={t("projectName")}
                       name="projectName"
                       value={formData.projectName}
                       onChange={handleChange}
-                      helperText="This will be displayed in the header"
+                      helperText={t("displayedInHeader")}
                     />
                   </Grid>
 
@@ -162,10 +143,12 @@ const Profile = () => {
                     <Button
                       type="submit"
                       variant="contained"
-                      startIcon={loading ? <CircularProgress size={20} /> : <Save />}
+                      startIcon={
+                        loading ? <CircularProgress size={20} /> : <Save />
+                      }
                       disabled={loading}
                     >
-                      {t('save')}
+                      {t("save")}
                     </Button>
                   </Grid>
                 </Grid>
@@ -175,20 +158,25 @@ const Profile = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ height: '100%' }}>
+          <Card sx={{ height: "100%" }}>
             <CardContent>
               <Typography variant="h6" mb={3}>
-                {t('settings') || 'Settings'}
+                {t("settings")}
               </Typography>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 {/* Language Setting */}
                 <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
                     <Language color="action" />
-                    <Typography variant="subtitle2">
-                      {t('language') || 'Language'}
-                    </Typography>
+                    <Typography variant="subtitle2">{t("language")}</Typography>
                   </Box>
                   <ToggleButtonGroup
                     value={language}
@@ -209,11 +197,20 @@ const Profile = () => {
 
                 {/* Theme Setting */}
                 <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    {mode === 'dark' ? <Brightness7 color="action" /> : <Brightness4 color="action" />}
-                    <Typography variant="subtitle2">
-                      {t('theme') || 'Theme'}
-                    </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    {mode === "dark" ? (
+                      <Brightness7 color="action" />
+                    ) : (
+                      <Brightness4 color="action" />
+                    )}
+                    <Typography variant="subtitle2">{t("theme")}</Typography>
                   </Box>
                   <ToggleButtonGroup
                     value={mode}
@@ -222,36 +219,12 @@ const Profile = () => {
                     size="small"
                   >
                     <ToggleButton value="light" sx={{ px: 3 }}>
-                      {t('light') || 'Light'}
+                      {t("light")}
                     </ToggleButton>
                     <ToggleButton value="dark" sx={{ px: 3 }}>
-                      {t('dark') || 'Dark'}
+                      {t("dark")}
                     </ToggleButton>
                   </ToggleButtonGroup>
-                </Box>
-
-                <Divider />
-
-                {/* Sync Categories */}
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <Sync color="action" />
-                    <Typography variant="subtitle2">
-                      Sync Categories
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                    Update categories to get newly added default categories
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={syncing ? <CircularProgress size={16} /> : <Sync />}
-                    onClick={handleSyncCategories}
-                    disabled={syncing}
-                  >
-                    {syncing ? 'Syncing...' : 'Sync Now'}
-                  </Button>
                 </Box>
               </Box>
             </CardContent>
@@ -260,16 +233,17 @@ const Profile = () => {
       </Grid>
 
       {/* Footer Card */}
-      <Card sx={{ mt: 4, textAlign: 'center', py: 3 }}>
+      <Card sx={{ mt: 4, textAlign: "center", py: 3 }}>
         <CardContent>
           <Typography variant="h5" color="primary" fontWeight="bold" mb={1}>
-            {t('appName')}
+            {t("appName")}
           </Typography>
           <Typography variant="subtitle1" color="text.secondary" mb={1}>
-            {t('tagline')}
+            {t("tagline")}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            The complete solution for tracking construction materials and expenses
+            The complete solution for tracking construction materials and
+            expenses
           </Typography>
 
           <Divider sx={{ mb: 3 }} />
@@ -281,7 +255,7 @@ const Profile = () => {
             Developed by Vishal Soni | Rajasthan, India
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Be kind to Animals. 🐾
+            Be kind to Animals.
           </Typography>
         </CardContent>
       </Card>

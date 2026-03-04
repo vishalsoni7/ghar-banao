@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 const purchaseItemSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
     trim: true
   },
   category: {
     type: String,
+    required: true,
     trim: true
   },
   quantity: {

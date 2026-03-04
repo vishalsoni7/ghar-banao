@@ -5,8 +5,17 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><text y='20' font-size='20'>🏠</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="GharBanao - Construction Material & Expense Tracker for your house construction" />
-    <meta name="theme-color" content="#1976d2" />
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta" />
     <title>GharBanao - Construction Tracker</title>
+    <script>
+      (function() {
+        var saved = localStorage.getItem('themeMode');
+        var meta = document.getElementById('theme-color-meta');
+        if (meta) {
+          meta.setAttribute('content', saved === 'dark' ? '#000000' : '#ffffff');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -9,11 +9,14 @@ import {
   Grid,
   MenuItem,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
-import { Add, Search, FilterList, Clear } from '@mui/icons-material';
+import { Add, Search, Clear } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import PurchaseList from '../components/Purchases/PurchaseList';
 import PurchaseForm from '../components/Purchases/PurchaseForm';
+import PurchaseDetails from '../components/Purchases/PurchaseDetails';
 import ConfirmDialog from '../components/Common/ConfirmDialog';
 import { usePurchases } from '../context/PurchaseContext';
 import { useVendors } from '../context/VendorContext';
@@ -23,9 +26,13 @@ const Purchases = () => {
   const { t } = useLanguage();
   const { purchases, loading, fetchPurchases, addPurchase, updatePurchase, deletePurchase } = usePurchases();
   const { vendors, fetchVendors } = useVendors();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [viewPurchase, setViewPurchase] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [purchaseToDelete, setPurchaseToDelete] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +59,8 @@ const Purchases = () => {
   };
 
   const handleView = (purchase) => {
-    handleEdit(purchase);
+    setViewPurchase(purchase);
+    setViewOpen(true);
   };
 
   const handleDelete = (purchase) => {
@@ -120,9 +128,11 @@ const Purchases = () => {
         <Typography variant="h4" fontWeight="bold">
           {t('purchases')}
         </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
-          {t('addPurchase')}
-        </Button>
+        {!isMobile && (
+          <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
+            {t('addPurchase')}
+          </Button>
+        )}
       </Box>
 
       {/* Filters */}
@@ -223,6 +233,12 @@ const Purchases = () => {
         loading={submitting}
       />
 
+      <PurchaseDetails
+        open={viewOpen}
+        onClose={() => setViewOpen(false)}
+        purchase={viewPurchase}
+      />
+
       <ConfirmDialog
         open={deleteDialogOpen}
         title={t('delete') + ' Purchase'}
@@ -231,6 +247,33 @@ const Purchases = () => {
         onCancel={() => setDeleteDialogOpen(false)}
         loading={deleting}
       />
+
+      {/* Fixed Bottom Button for Mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            zIndex: 1000,
+          }}
+        >
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<Add />}
+            onClick={handleAdd}
+          >
+            {t('addPurchase')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

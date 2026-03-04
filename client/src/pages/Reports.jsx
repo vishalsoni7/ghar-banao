@@ -152,14 +152,14 @@ const Reports = () => {
           <Card sx={{ height: isMobile ? 320 : 400, display: 'flex', flexDirection: 'column' }}>
             <CardContent sx={{ p: isMobile ? 2 : 3, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
               <Typography variant="h6" mb={2}>
-                {t('categoryWise')} Details
+                {t('categoryWise')} {t('details')}
               </Typography>
               <TableContainer sx={{ flex: 1, overflow: 'auto' }}>
                 <Table size="small" stickyHeader>
                   <TableHead>
                     <TableRow>
                       <TableCell>{t('category')}</TableCell>
-                      {!isMobile && <TableCell align="right">Items</TableCell>}
+                      {!isMobile && <TableCell align="right">{t('items')}</TableCell>}
                       <TableCell align="right">{t('amount')}</TableCell>
                     </TableRow>
                   </TableHead>

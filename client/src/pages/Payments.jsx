@@ -8,6 +8,8 @@ import {
   CircularProgress,
   Grid,
   MenuItem,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Add, Search } from '@mui/icons-material';
 import toast from 'react-hot-toast';
@@ -22,6 +24,8 @@ const Payments = () => {
   const { t } = useLanguage();
   const { payments, loading, fetchPayments, addPayment, deletePayment } = usePayments();
   const { vendors, fetchVendors } = useVendors();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -93,9 +97,11 @@ const Payments = () => {
         <Typography variant="h4" fontWeight="bold">
           {t('payments')}
         </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
-          {t('addPayment')}
-        </Button>
+        {!isMobile && (
+          <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
+            {t('addPayment')}
+          </Button>
+        )}
       </Box>
 
       {/* Filters */}
@@ -158,6 +164,33 @@ const Payments = () => {
         onCancel={() => setDeleteDialogOpen(false)}
         loading={deleting}
       />
+
+      {/* Fixed Bottom Button for Mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            zIndex: 1000,
+          }}
+        >
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<Add />}
+            onClick={handleAdd}
+          >
+            {t('addPayment')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

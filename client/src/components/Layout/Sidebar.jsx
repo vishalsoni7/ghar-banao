@@ -16,6 +16,7 @@ import {
   ShoppingCart,
   Payment,
   Assessment,
+  Category,
   Home,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -31,6 +32,7 @@ const Sidebar = ({ mobileOpen, onClose, drawerWidth }) => {
     { path: '/vendors', icon: <Store />, label: t('vendors') },
     { path: '/purchases', icon: <ShoppingCart />, label: t('purchases') },
     { path: '/payments', icon: <Payment />, label: t('payments') },
+    { path: '/categories', icon: <Category />, label: t('categories') },
     { path: '/reports', icon: <Assessment />, label: t('reports') },
   ];
 

@@ -61,6 +61,23 @@ export const PurchaseProvider = ({ children }) => {
     }
   }, []);
 
+  const addCategory = async (data) => {
+    const response = await categoryAPI.create(data);
+    setCategories(prev => [...prev, response.data.category].sort((a, b) => a.name.localeCompare(b.name)));
+    return response.data;
+  };
+
+  const updateCategory = async (id, data) => {
+    const response = await categoryAPI.update(id, data);
+    setCategories(prev => prev.map(c => c._id === id ? response.data.category : c).sort((a, b) => a.name.localeCompare(b.name)));
+    return response.data;
+  };
+
+  const deleteCategory = async (id) => {
+    await categoryAPI.delete(id);
+    setCategories(prev => prev.filter(c => c._id !== id));
+  };
+
   const addPurchase = async (data) => {
     const response = await purchaseAPI.create(data);
     setPurchases(prev => [response.data.purchase, ...prev]);
@@ -91,6 +108,9 @@ export const PurchaseProvider = ({ children }) => {
       fetchPurchases,
       fetchCategories,
       syncCategories,
+      addCategory,
+      updateCategory,
+      deleteCategory,
       addPurchase,
       updatePurchase,
       deletePurchase,

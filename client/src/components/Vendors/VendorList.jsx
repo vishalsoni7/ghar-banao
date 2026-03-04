@@ -12,6 +12,7 @@ import {
   Edit,
   Delete,
   Phone,
+  Call,
   Place,
   ShoppingCart,
   ExpandMore,
@@ -82,6 +83,19 @@ const VendorItem = ({ vendor, onEdit, onDelete, expanded, onToggle, isLast }) =>
 
         {/* Actions */}
         <Box sx={{ display: 'flex', gap: 0.5 }}>
+          {vendor.phone && (
+            <Tooltip title={t('call')}>
+              <IconButton
+                size="small"
+                color="primary"
+                component="a"
+                href={`tel:${vendor.phone}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Call fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title={t('edit')}>
             <IconButton
               size="small"

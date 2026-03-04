@@ -6,6 +6,8 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { Add, Search } from '@mui/icons-material';
 import toast from 'react-hot-toast';
@@ -18,6 +20,8 @@ import { useLanguage } from '../context/LanguageContext';
 const Vendors = () => {
   const { t } = useLanguage();
   const { vendors, loading, fetchVendors, addVendor, updateVendor, deleteVendor } = useVendors();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [formOpen, setFormOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
@@ -96,9 +100,11 @@ const Vendors = () => {
         <Typography variant="h4" fontWeight="bold">
           {t('vendors')}
         </Typography>
-        <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
-          {t('addVendor')}
-        </Button>
+        {!isMobile && (
+          <Button variant="contained" startIcon={<Add />} onClick={handleAdd}>
+            {t('addVendor')}
+          </Button>
+        )}
       </Box>
 
       <TextField
@@ -145,6 +151,33 @@ const Vendors = () => {
         onCancel={() => setDeleteDialogOpen(false)}
         loading={deleting}
       />
+
+      {/* Fixed Bottom Button for Mobile */}
+      {isMobile && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderTop: 1,
+            borderColor: 'divider',
+            zIndex: 1000,
+          }}
+        >
+          <Button
+            variant="contained"
+            fullWidth
+            size="large"
+            startIcon={<Add />}
+            onClick={handleAdd}
+          >
+            {t('addVendor')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

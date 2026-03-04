@@ -20,6 +20,11 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('themeMode', mode);
+    // Update the theme-color meta tag for iOS status bar
+    const metaThemeColor = document.getElementById('theme-color-meta');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', mode === 'dark' ? '#000000' : '#ffffff');
+    }
   }, [mode]);
 
   const toggleTheme = () => {
